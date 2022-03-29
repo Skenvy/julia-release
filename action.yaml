@@ -1,8 +1,12 @@
 # https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'Julia: R&R ~ Release and Register'
+description: 'Automatically release and register any push to a deployment branch that updates the Julia pkg version.'
+author: 'Nathan Levett'
+branding:
+  icon: 'sunrise'  
+  color: 'purple'
 inputs:
   deployment_branch:
     description: 'Name of branch from which against to deploy; e.g. master|main|trunk|other'
@@ -28,8 +32,14 @@ inputs:
     required: false
     default: true
 outputs:
-  new_version: # id of output
-    description: 'The version listed in project.'
+  new_version:
+    description: 'The new version listed in project.'
+  old_version:
+    description: 'The old version listed in project.'
+  diff_from:
+    description: 'The sha of the "previous head of the deployment branch" that is used to check for a change in the version.'
+  diff_to:
+    description: 'The sha of the commit that is taken as the current ~ which without frobbing the head will be the github_sha.'
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -40,6 +50,3 @@ runs:
     - ${{ inputs.release_tag_template }}
     - ${{ inputs.release_name_template }}
     - ${{ inputs.auto_register }}
-branding:
-  icon: 'sunrise'  
-  color: 'purple'

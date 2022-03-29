@@ -23,6 +23,8 @@ MAIN=$(git rev-parse $MAIN_BRANCH)
 PREVIOUS_MAIN=$(git rev-parse $MAIN^1)
 SHA_DIFF="$PREVIOUS_MAIN..$HEAD"
 echo "::notice::The 'previous main'..'current_head' diff is $SHA_DIFF"
+echo "::set-output name=diff_from::$PREVIOUS_MAIN"
+echo "::set-output name=diff_to::$HEAD"
 PROJECT_DIFF=$(git diff $SHA_DIFF $PROJECT_FILE)
 echo "$PROJECT_DIFF"
 
