@@ -1,0 +1,45 @@
+# https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+# https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
+name: 'Hello World'
+description: 'Greet someone and record the time'
+inputs:
+  deployment_branch:
+    description: 'Name of branch from which against to deploy; e.g. master|main|trunk|other'
+    required: true
+  subdirectory:
+    description: "The path to the folder/subdirectory containing the Pkg's Project.toml"
+    required: false
+    default: '.'
+  changelog:
+    description: 'An optional changelog with which to generate notes in the release.'
+    required: false
+    default: ""
+  release_tag_template:
+    description: 'A template to generate the release tag. Exposes "<NEW_VERSION>". ("/" will be replaced with "_").'
+    required: false
+    default: "v<NEW_VERSION>"
+  release_name_template:
+    description: 'A template to generate the release name. Exposes "<NEW_VERSION>".'
+    required: false
+    default: "Version: <NEW_VERSION>"
+  auto_register:
+    description: 'Whether to automatically register your new release.'
+    required: false
+    default: true
+outputs:
+  new_version: # id of output
+    description: 'The version listed in project.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.deployment_branch }}
+    - ${{ inputs.subdirectory }}
+    - ${{ inputs.changelog }}
+    - ${{ inputs.release_tag_template }}
+    - ${{ inputs.release_name_template }}
+    - ${{ inputs.auto_register }}
+branding:
+  icon: 'sunrise'  
+  color: 'purple'

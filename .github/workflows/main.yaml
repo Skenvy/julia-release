@@ -1,0 +1,86 @@
+name: Test
+on:
+  push:
+    branches-ignore:
+    - 'TEST_TARGET_BRANCH_*'
+defaults:
+  run:
+    shell: bash
+jobs:
+  context:
+    name: GitHub 🐱‍👤 Context 📑
+    uses: ./.github/workflows/github-context.yaml
+  test:
+    name: Test the action on different folder depths
+    strategy:
+      fail-fast: false
+      matrix:
+        # We're expecting ., a, and a/b to all detect an old version and a new
+        # version. We're expecting a/b/c to detect nothing, because it hasn't
+        # changed, and we're expecting a/b/d to detect a new but not old version
+        # All with respect to diffing the TEST_TARGET_BRANCH branch.
+        subdir: ['.', 'a', 'a/b', 'a/b/c', 'a/b/d']
+    runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: TEST - Frob the HEAD commit - Checkout test target
+      run: git checkout -b TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}
+    - name: TEST - Frob the HEAD commit - Commit a change to the Project.toml
+      # --allow-empty for a/b/c to not contain an update
+      run: |
+        echo "version = \"1.2.3\"" > ${{ matrix.subdir }}/Project.toml
+        git add ${{ matrix.subdir }}/Project.toml
+        git config user.email "you@example.com"
+        git config user.name "Your Name"
+        git commit -m "Frobbed HEAD" --allow-empty
+        git push --set-upstream origin TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}
+    - name: Test the action on ${{ matrix.subdir }}
+      uses: ./ # Uses an action in the root directory
+      id: action_test
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        deployment_branch: 'TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}'
+        subdirectory: ${{ matrix.subdir }}
+        release_tag_template: "julia-v<NEW_VERSION>-${{ matrix.subdir }}-r${{ github.run_number }}"
+        release_name_template: "Julia: Version <NEW_VERSION>: ${{ matrix.subdir }}-R${{ github.run_number }}"
+        auto_register: ${{ matrix.subdir != 'a/b' }}
+    - name: Get the new version
+      run: echo "The new version was ${{ steps.action_test.outputs.new_version }}"
+  clean_releases:
+    name: Clean Releases and Tags
+    needs: [test]
+    if: ${{ always() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        subdir: ['.', 'a', 'a_b', 'a_b_d']
+    runs-on: ubuntu-latest
+    steps:
+    # Needs to checkout to have the context to call the gh release
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Remove the release julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: gh release delete julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }} -y
+    - name: Remove the TAG julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
+      run: git push --delete origin julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
+  clean_test_branches:
+    name: Clean Branches
+    needs: [test]
+    if: ${{ always() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        subdir: ['.', 'a', 'a/b', 'a/b/c', 'a/b/d']
+    runs-on: ubuntu-latest
+    steps:
+    # Needs to checkout to have the context to call git
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Remove the branch 'TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}'
+      run: git push origin --delete TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}
