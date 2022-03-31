@@ -34,26 +34,28 @@ echo "::set-output name=diff_from::$PREVIOUS_MAIN"
 echo "::set-output name=diff_to::$HEAD"
 set +u
 PROJECT_DIFF=$(git diff $SHA_DIFF $PROJECT_FILE)
-if [ "$PROJECT_DIFF" == "" ]; then
-    echo "::warning::The diff $SHA_DIFF has no lines in $PROJECT_FILE, so ending the action."
-    exit 0
-fi
+[ "$PROJECT_DIFF" == "" ] && echo "::warning::The diff $SHA_DIFF has no lines in $PROJECT_FILE, so ending the action." && exit 0
 
 # And use it to capture the version diff, if it exists.
+# Re-allow pipefail ~ intentionally setting a warning if the result is empty.
+set +o pipefail
 OLD_VERSION="$(echo "$PROJECT_DIFF" | grep -e "^-version = " | cut -d \" -f 2)"
 if [ "$OLD_VERSION" != "" ]; then
     echo "::notice::OLD VERSION IS $OLD_VERSION"
     echo "::set-output name=old_version::$OLD_VERSION"
+else
+    echo "::warning::The diff $SHA_DIFF has no line that matches \"^-version = \" (old version) in $PROJECT_FILE; allowing the action to continue to find a new version."
+    echo "::set-output name=old_version::0.0.0"
 fi
 NEW_VERSION="$(echo "$PROJECT_DIFF" | grep -e "^+version = " | cut -d \" -f 2)"
 if [ "$NEW_VERSION" == "" ]; then
-    echo "::warning::The diff $SHA_DIFF has no line that matches \"^+version = \" in $PROJECT_FILE, so ending the action."
+    echo "::warning::The diff $SHA_DIFF has no line that matches \"^+version = \" (new version) in $PROJECT_FILE, so ending the action."
     exit 0
 else
     echo "::notice::NEW VERSION IS $NEW_VERSION"
     echo "::set-output name=new_version::$NEW_VERSION"
 fi
-set -u
+set -uo pipefail
 
 # Both the release and registration comment require the GITHUB_TOKEN to be provided,
 # but the above git operations do not, so both the release and registration are wrapped in optional
