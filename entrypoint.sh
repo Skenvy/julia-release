@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 # https://docs.github.com/en/actions/creating-actions/setting-exit-codes-for-actions
-set -euo pipefail
+set -euxo pipefail
 
 # Sanity in
 MAIN_BRANCH="$INPUT_DEPLOYMENT_BRANCH"
