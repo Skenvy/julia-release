@@ -25,6 +25,10 @@ This is the ideological reverse order of the standard [julia TagBot](https://git
 * _Optional_
 * A template to generate the release name. Exposes "<NEW_VERSION>".
 * Default `"Version: <NEW_VERSION>"`.
+### `auto_release`
+* _Optional_
+* Whether to automatically release your new version.
+* Default `true`.
 ### `auto_register`
 * _Optional_
 * Whether to automatically register your new release.
@@ -41,7 +45,7 @@ This is the ideological reverse order of the standard [julia TagBot](https://git
 * The sha of the commit that is taken as the current ~ which without frobbing the head will be the github_sha.
 #
 ## Example usage
-### The `on:` to use for the workflow
+### _Optional:_ The `on:` to use for the workflow
 * For a `deployment_branch` of `main`, and a `subdirectory` of `path/to/your`
 * Even if you use the default `subdirectory` that is `"."` ~ _the project root_, it's still advised to speficically target `'./Project.toml'` for the workflow, if calling this is it's primary intent, to not over trigger it.
 ```
@@ -52,10 +56,18 @@ on:
     paths:
     - 'path/to/your/Project.toml'
 ```
-### In jobs.<job_id>.runs-on:
+### **Required:** In jobs.<job_id>.runs-on:
 * This is a docker job, so you'll need;
 ```
 runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
+```
+### **Required:** In jobs.<job_id>.steps[*]
+* Prior to the `uses: Skenvy/julia-release@v1` step, you'll need to checkout with depth 0, as this action checks the diff against older commits. If you _only_ allow squashes, a checkout depth greater than 1 might be ok, although 0 is recommended.
+```
+- name: 🏁 Checkout
+  uses: actions/checkout@v3
+  with:
+    fetch-depth: 0
 ```
 ### In jobs.<job_id>.steps[*].uses:
 * For a package project located at the root `./Project.toml`, with the deployment branch being `main`, in the least decorated way;
@@ -85,5 +97,14 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
   ...
   with:
     ...
+    auto_register: false
+```
+* If you are restrictive about which actions you're happy to supply your `$GITHUB_TOKEN` to, the release and registration can _both_ be disallowed, while still setting outputs to be used elsewhere of `${{ steps.julia_release.outputs.<OUTPUT_NAME> }}` for the outputs mentioned above of `new_version`, `old_version`, `diff_from`, and `diff_to`;
+```
+- uses: Skenvy/julia-release@v1
+  id: julia_release
+  with:
+    deployment_branch: 'main'
+    auto_release: false
     auto_register: false
 ```

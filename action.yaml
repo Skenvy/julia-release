@@ -27,6 +27,10 @@ inputs:
     description: 'A template to generate the release name. Exposes "<NEW_VERSION>".'
     required: false
     default: "Version: <NEW_VERSION>"
+  auto_release:
+    description: 'Whether to automatically release your new version.'
+    required: false
+    default: true
   auto_register:
     description: 'Whether to automatically register your new release.'
     required: false
@@ -49,4 +53,5 @@ runs:
     - ${{ inputs.changelog }}
     - ${{ inputs.release_tag_template }}
     - ${{ inputs.release_name_template }}
+    - ${{ inputs.auto_release }}
     - ${{ inputs.auto_register }}

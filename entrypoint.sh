@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 # https://docs.github.com/en/actions/creating-actions/setting-exit-codes-for-actions
+set -euo pipefail
 
 # Sanity in
 MAIN_BRANCH="$INPUT_DEPLOYMENT_BRANCH"
@@ -9,10 +10,16 @@ PROJECT_FILE="$SUBDIR/Project.toml"
 HEAD=$(git rev-parse HEAD)
 echo "::notice::Targetting $PROJECT_FILE in branch $MAIN_BRANCH, on SHA $HEAD"
 
-# We need to update the local ref of $MAIN
+# We need to update the local ref/heads of $MAIN
 # (while this SHOULD be run only against a HEAD _on_ $MAIN, it's not guarenteed)
 # After the below, the ref should now include a local $MAIN ~ # git show-ref
+set +e
 git fetch origin $MAIN_BRANCH:$MAIN_BRANCH
+set -e
+# If only running on a push to $MAIN, this fetch above will trigger an error of --
+# fatal: Refusing to fetch into current branch refs/heads/main of non-bare repository
+# which is not an issue to running this ~ although needed to supply a ref for the below
+# rev-parse to identify the top commit on it, which is then handled by the intentional exit below
 MAIN=$(git rev-parse $MAIN_BRANCH)
 # A push against the deployment branch would make the HEAD commit the same commit as the head of MAIN.
 # HEAD here is the same as GITHUB_SHA, so this is also confirming that there's no race condition on too many quick commits to MAIN
@@ -26,7 +33,6 @@ echo "::notice::The 'previous main'..'current_head' diff is $SHA_DIFF"
 echo "::set-output name=diff_from::$PREVIOUS_MAIN"
 echo "::set-output name=diff_to::$HEAD"
 PROJECT_DIFF=$(git diff $SHA_DIFF $PROJECT_FILE)
-echo "$PROJECT_DIFF"
 
 # And use it to capture the version diff, if it exists.
 OLD_VERSION=$(echo "$PROJECT_DIFF" | grep -e "^-version = " | cut -d \" -f 2)
@@ -41,18 +47,28 @@ else
     echo "::set-output name=new_version::$NEW_VERSION"
 fi
 
-# Get the relevant inputs for creating a release at $HEAD
-CHANGELOG="$INPUT_CHANGELOG"
-RELEASE_TAG_TEMPLATE="$INPUT_RELEASE_TAG_TEMPLATE"
-RELEASE_NAME_TEMPLATE="$INPUT_RELEASE_NAME_TEMPLATE"
-# Sanitise the inputs
-[ "$CHANGELOG" == "" ] && CHANGELOG="--generate-notes" || CHANGELOG="-F $CHANGELOG"
-RELEASE_TAG_TEMPLATE=$(echo "$RELEASE_TAG_TEMPLATE" | sed "s/<NEW_VERSION>/$NEW_VERSION/g; s|/|_|g;")
-RELEASE_NAME_TEMPLATE=$(echo "-t \"$RELEASE_NAME_TEMPLATE\"" | sed "s/<NEW_VERSION>/$NEW_VERSION/g;")
-echo "::notice::gh release create $RELEASE_TAG_TEMPLATE $CHANGELOG $RELEASE_NAME_TEMPLATE"
+# Both the release and registration comment require the GITHUB_TOKEN to be provided,
+# but the above git operations do not, so both the release and registration are wrapped in optional
+# but default true arguments, that can be disabled, in case for some reason, someone would want to
+# use this without providing their GITHUB_TOKEN to a potentially "untrusted" action -- but the
+# action will still yield the "new_release" and "old_release" outputs to be used with the github
+# published actions that release / comment.
 
 # Release
-gh release create "$RELEASE_TAG_TEMPLATE" "$CHANGELOG" "$RELEASE_NAME_TEMPLATE"
+if [ "$INPUT_AUTO_RELEASE" == "true" ]; then
+    # Get the relevant inputs for creating a release at $HEAD
+    CHANGELOG="$INPUT_CHANGELOG"
+    RELEASE_TAG_TEMPLATE="$INPUT_RELEASE_TAG_TEMPLATE"
+    RELEASE_NAME_TEMPLATE="$INPUT_RELEASE_NAME_TEMPLATE"
+    # Sanitise the inputs
+    [ "$CHANGELOG" == "" ] && CHANGELOG="--generate-notes" || CHANGELOG="-F $CHANGELOG"
+    RELEASE_TAG_TEMPLATE=$(echo "$RELEASE_TAG_TEMPLATE" | sed "s/<NEW_VERSION>/$NEW_VERSION/g; s|/|_|g;")
+    RELEASE_NAME_TEMPLATE=$(echo "$RELEASE_NAME_TEMPLATE" | sed "s/<NEW_VERSION>/$NEW_VERSION/g;")
+    echo "::notice::gh release create $RELEASE_TAG_TEMPLATE $CHANGELOG $RELEASE_NAME_TEMPLATE"
+    gh release create "$RELEASE_TAG_TEMPLATE" "$CHANGELOG" -t "$RELEASE_NAME_TEMPLATE"
+else
+    echo "::warning::Option \"auto_release\" is not the default true, so the release was not published."
+fi
 
 # Now we've released, tag the commit to summon registrator.
 REGDIR=""
