@@ -35,9 +35,9 @@ echo "::set-output name=diff_to::$HEAD"
 PROJECT_DIFF=$(git diff $SHA_DIFF $PROJECT_FILE)
 
 # And use it to capture the version diff, if it exists.
-OLD_VERSION=$(echo "$PROJECT_DIFF" | grep -e "^-version = " | cut -d \" -f 2)
+OLD_VERSION="$(echo "$PROJECT_DIFF" | grep -e "^-version = " | cut -d \" -f 2)"
 echo "::set-output name=old_version::$OLD_VERSION"
-NEW_VERSION=$(echo "$PROJECT_DIFF" | grep -e "^+version = " | cut -d \" -f 2)
+NEW_VERSION="$(echo "$PROJECT_DIFF" | grep -e "^+version = " | cut -d \" -f 2)"
 echo "::notice::OLD VERSION IS $OLD_VERSION"
 if [ "$NEW_VERSION" == "" ]; then
     echo "::warning::The diff $SHA_DIFF has no line that matches \"^+version = \" in $PROJECT_FILE, so ending the action."
