@@ -194,7 +194,7 @@ jobs:
     - name: 🧱 Install build dependencies
       run: |
         rm -rf docs/build/
-	      rm -rf docs/site/
+        rm -rf docs/site/
         rm -f deps/build.log
         rm -f Manifest.toml
         rm -f */Manifest.toml
@@ -239,11 +239,11 @@ jobs:
     - name: 🧱 Build
       uses: julia-actions/julia-buildpkg@v1.2
       with:
-        project: julia
+        project: subdir
     - name: 🦂 Test
       uses: julia-actions/julia-runtest@v1.7
       with:
-        project: julia
+        project: subdir
   docs:
     name: Julia 🔴🟢🟣 Docs 📄
     runs-on: ubuntu-latest
