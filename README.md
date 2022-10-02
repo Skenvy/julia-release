@@ -1,7 +1,9 @@
 # [julia-release](https://github.com/Skenvy/julia-release)
-An action to proctor the CD (release and registering) of a julia project. [![Test](https://github.com/Skenvy/julia-release/actions/workflows/main.yaml/badge.svg?branch=main&event=push)](https://github.com/Skenvy/julia-release/actions/workflows/main.yaml)
+[![Test](https://github.com/Skenvy/julia-release/actions/workflows/main.yaml/badge.svg?branch=main&event=push)](https://github.com/Skenvy/julia-release/actions/workflows/main.yaml)
+
+An action to proctor the CD (release and registering) of a julia project.
 #
-A github action to automate the release and registration of a Julia package (via the [Registrator](https://github.com/JuliaRegistries/Registrator.jl) bot, so will require it to be installed). It will detect any commit to a designated deployment branch that updates the project version in the required `Project.toml`, and create a release and registration for it.
+A github action to automate the release and registration of a Julia package (via the [Registrator](https://github.com/JuliaRegistries/Registrator.jl) bot, so will [require it to be installed](https://github.com/apps/juliateam-registrator/installations/new)). It will detect any commit to a designated deployment branch that updates the project version in the required `Project.toml`, and create a release and registration for it.
 
 This is the ideological reverse order of the standard [julia TagBot](https://github.com/JuliaRegistries/TagBot), which creates github releases of commits after _manually_ registering them. Instead, this action, when set up in the recommended way, will, if it detects a change to the `version`, create a release, and comment the `"@JuliaRegistrator register"` command on the commit that it has released, for a _truly continuous_ **deployment strategy**; **_CD_**.
 #
