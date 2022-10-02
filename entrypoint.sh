@@ -3,6 +3,17 @@
 # https://docs.github.com/en/actions/creating-actions/setting-exit-codes-for-actions
 set -euxo pipefail
 
+# Allow git to run on mounted directories -- without this we'd get;
+# fatal: detected dubious ownership in repository at '/github/workspace'
+# https://github.blog/2022-04-12-git-security-vulnerability-announced/#cve-2022-24765
+# https://github.com/git/git/commit/8959555cee7ec045958f9b6dd62e541affb7e7d9
+# https://github.com/actions/runner/issues/2033
+# Can't set as an ARG on the Dockerfile to pass the $(id -u) and $(id -g) as only root is supported.
+# https://docs.github.com/en/actions/creating-actions/dockerfile-support-for-github-actions#user
+# git config --global --add safe.directory '*' -- might be necessary for submodules, but more permissive.
+# https://github.com/actions/checkout/issues/766
+git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
 # Sanity in
 MAIN_BRANCH="$INPUT_DEPLOYMENT_BRANCH"
 SUBDIR="$INPUT_SUBDIRECTORY"
