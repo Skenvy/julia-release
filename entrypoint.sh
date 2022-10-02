@@ -3,6 +3,11 @@
 # https://docs.github.com/en/actions/creating-actions/setting-exit-codes-for-actions
 set -euxo pipefail
 
+# Allow git to run on mounted directories
+# https://github.com/git/git/commit/8959555cee7ec045958f9b6dd62e541affb7e7d9
+# https://github.com/actions/runner/issues/2033
+git config --global --add safe.directory '*'
+
 # Sanity in
 MAIN_BRANCH="$INPUT_DEPLOYMENT_BRANCH"
 SUBDIR="$INPUT_SUBDIRECTORY"
