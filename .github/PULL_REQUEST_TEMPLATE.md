@@ -1,3 +1,8 @@
+<!--
+Thanks for sending a pull request!
+If this is your first time, please read the contributor guidelines:
+https://github.com/Skenvy/julia-release/blob/main/CONTRIBUTING.md
+-->
 # What issue is this addressing?
 <!-- EITHER|OR of the two below -->
 <!-- Fixes #<issue number> -->

@@ -1,0 +1,36 @@
+name: Bug Report
+description: Report a bug discovered in any implementation and any version
+labels: bug
+body:
+- type: textarea
+  id: version_of_this
+  attributes:
+    label: What version of the action did the issue happen on (either the tag, commit hash, or semver)?
+  validations:
+    required: true
+- type: textarea
+  id: repro_steps
+  attributes:
+    label: What were you doing (steps to reproduce the bug)? Add a link to your repo's workflow run logs for which this action failed, if it's public.
+  validations:
+    required: true
+- type: textarea
+  id: actual_result
+  attributes:
+    label: What actually happened as a result?
+  validations:
+    required: true
+- type: textarea
+  id: expected_result
+  attributes:
+    label: What did you expect to happen?
+  validations:
+    required: true
+- type: textarea
+  id: stacktrace
+  attributes:
+    label: If you have a stack trace, please add it here.
+- type: textarea
+  id: additional
+  attributes:
+    label: Anything else you feel useful to add?

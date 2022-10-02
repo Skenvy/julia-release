@@ -50,7 +50,7 @@ This is the ideological reverse order of the standard [julia TagBot](https://git
 ### _Optional:_ The `on:` to use for the workflow
 * For a `deployment_branch` of `main`, and a `subdirectory` of `path/to/your`
 * Even if you use the default `subdirectory` that is `"."` ~ _the project root_, it's still advised to speficically target `'./Project.toml'` for the workflow, if calling this is it's primary intent, to not over trigger it.
-```
+```yaml
 on:
   push:
     branches:
@@ -60,12 +60,12 @@ on:
 ```
 ### **Required:** In jobs.<job_id>.runs-on:
 * This is a docker job, so you'll need;
-```
+```yaml
 runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
 ```
 ### **Required:** In jobs.<job_id>.steps[*]
 * Prior to the `uses: Skenvy/julia-release@v1` step, you'll need to checkout with depth 0, as this action checks the diff against older commits. If you _only_ allow squashes, a checkout depth greater than 1 might be ok, although 0 is recommended.
-```
+```yaml
 - name: 🏁 Checkout
   uses: actions/checkout@v3
   with:
@@ -73,7 +73,7 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
 ```
 ### In jobs.<job_id>.steps[*].uses:
 * For a package project located at the root `./Project.toml`, with the deployment branch being `main`, in the least decorated way;
-```
+```yaml
 - uses: Skenvy/julia-release@v1
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,7 +81,7 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
     deployment_branch: 'main'
 ```
 * For a package project located at `./path/to/your/Project.toml`, with optionally more verbose release tag and name, and a pretty step name.
-```
+```yaml
 - name: Julia 🔴🟢🟣 Release 🚰 and Register 📦
   uses: Skenvy/julia-release@v1
   id: release_step
@@ -94,7 +94,7 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
     release_name_template: "Julia: Version <NEW_VERSION>"
 ```
 * Although "registering" via the [Registrator](https://github.com/JuliaRegistries/Registrator.jl) bot is a primary intent of this, if you simply want to automate releases, but _not_ automate the registration, you can prevent the registrator comment with;
-```
+```yaml
 - uses: Skenvy/julia-release@v1
   ...
   with:
@@ -102,7 +102,7 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
     auto_register: false
 ```
 * If you are restrictive about which actions you're happy to supply your `$GITHUB_TOKEN` to, the release and registration can _both_ be disallowed, while still setting outputs to be used elsewhere of `${{ steps.julia_release.outputs.<OUTPUT_NAME> }}` for the outputs mentioned above of `new_version`, `old_version`, `diff_from`, and `diff_to`;
-```
+```yaml
 - uses: Skenvy/julia-release@v1
   id: julia_release
   with:
@@ -115,7 +115,7 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
 ### The CD workflow ~ `./.github/workflows/julia-build.yaml`
 * For a deployment branch `main`, with a project in a subdir `subdir`.
 * Assumes the existence of a `./.github/workflows/julia-test.yaml`
-```
+```yaml
 name: Julia 🔴🟢🟣 Test 🦂 Release 🚰 and Register 📦
 on:
   push:
@@ -155,7 +155,7 @@ jobs:
 ```
 ### The CI workflow ~ `./.github/workflows/julia-test.yaml`
 * For a deployment branch `main`, with a project `MyProject` in a subdir `subdir`.
-```
+```yaml
 name: Julia 🔴🟢🟣 Tests 🦂
 on:
   push:
