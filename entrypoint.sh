@@ -41,8 +41,8 @@ MAIN=$(git rev-parse $MAIN_BRANCH)
 PREVIOUS_MAIN=$(git rev-parse $MAIN^1)
 SHA_DIFF="$PREVIOUS_MAIN..$HEAD"
 echo "::notice::The 'previous main'..'current_head' diff is $SHA_DIFF"
-echo "::set-output name=diff_from::$PREVIOUS_MAIN"
-echo "::set-output name=diff_to::$HEAD"
+echo "diff_from=$PREVIOUS_MAIN" >> $GITHUB_OUTPUT
+echo "diff_to=$HEAD" >> $GITHUB_OUTPUT
 set +u
 PROJECT_DIFF=$(git diff $SHA_DIFF $PROJECT_FILE)
 [ "$PROJECT_DIFF" == "" ] && echo "::warning::The diff $SHA_DIFF has no lines in $PROJECT_FILE, so ending the action." && exit 0
@@ -53,10 +53,10 @@ set +o pipefail
 OLD_VERSION="$(echo "$PROJECT_DIFF" | grep -e "^-version = " | cut -d \" -f 2)"
 if [ "$OLD_VERSION" != "" ]; then
     echo "::notice::OLD VERSION IS $OLD_VERSION"
-    echo "::set-output name=old_version::$OLD_VERSION"
+    echo "old_version=$OLD_VERSION" >> $GITHUB_OUTPUT
 else
     echo "::warning::The diff $SHA_DIFF has no line that matches \"^-version = \" (old version) in $PROJECT_FILE; allowing the action to continue to find a new version."
-    echo "::set-output name=old_version::0.0.0"
+    echo "old_version=0.0.0" >> $GITHUB_OUTPUT
 fi
 NEW_VERSION="$(echo "$PROJECT_DIFF" | grep -e "^+version = " | cut -d \" -f 2)"
 if [ "$NEW_VERSION" == "" ]; then
@@ -64,7 +64,7 @@ if [ "$NEW_VERSION" == "" ]; then
     exit 0
 else
     echo "::notice::NEW VERSION IS $NEW_VERSION"
-    echo "::set-output name=new_version::$NEW_VERSION"
+    echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 fi
 set -uo pipefail
 
