@@ -10,7 +10,8 @@ branding:
 inputs:
   deployment_branch:
     description: 'Name of branch from which against to deploy; e.g. master|main|trunk|other'
-    required: true
+    required: false
+    default: 'main'
   subdirectory:
     description: "The path to the folder/subdirectory containing the Pkg's Project.toml"
     required: false
