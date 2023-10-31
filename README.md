@@ -1,9 +1,17 @@
 # [julia-release](https://github.com/Skenvy/julia-release)
 [![Test](https://github.com/Skenvy/julia-release/actions/workflows/main.yaml/badge.svg?branch=main&event=push)](https://github.com/Skenvy/julia-release/actions/workflows/main.yaml)
 
-An action to proctor the CD (release and registering) of a julia project.
+An action to proctor the CD (release and registering) of a julia project. Use the action to automate the detection of an update to the `version` in your `Project.toml`, and from that, automate the creation of a GitHub release and the [Registrator](https://github.com/JuliaRegistries/Registrator.jl) comment on the commit tagged by that release.
+```yaml
+- name: Julia 🔴🟢🟣 Release 🚰 and Register 📦
+  uses: Skenvy/julia-release@v1
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 #
-A github action to automate the release and registration of a Julia package (via the [Registrator](https://github.com/JuliaRegistries/Registrator.jl) bot, so will [require it to be installed](https://github.com/apps/juliateam-registrator/installations/new)). It will detect any commit to a designated deployment branch that updates the project version in the required `Project.toml`, and create a release and registration for it.
+A github action to automate the release and registration of a Julia package (via the [Registrator](https://github.com/JuliaRegistries/Registrator.jl) bot, so will [require it to be installed](https://github.com/apps/juliateam-registrator/installations/new)).
+
+It will detect any commit to a designated `deployment_branch` that updates the project version in the required `<subdirectory>/Project.toml`, and create a release and registration for it.
 
 This is the ideological reverse order of the standard [julia TagBot](https://github.com/JuliaRegistries/TagBot), which creates github releases of commits after _manually_ registering them. Instead, this action, when set up in the recommended way, will, if it detects a change to the `version`, create a release, and comment the `"@JuliaRegistrator register"` command on the commit that it has released, for a _truly continuous_ **deployment strategy**; **_CD_**.
 #
@@ -112,6 +120,7 @@ runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
 ```
 #
 ## A full example
+The motivation in making this was to simplify the CI steps to not have to manually summon the registrator bot and not have to rely on the tagbot to create releases after after commenting the registrator bot to "release" them. See it used below in a minimal example, or see it used in the place it was originally designed for [here](https://github.com/Skenvy/Collatz/blob/main/.github/workflows/julia-build.yaml), and the test working that calls [here](https://github.com/Skenvy/Collatz/blob/main/.github/workflows/julia-test.yaml).
 ### The CD workflow ~ `./.github/workflows/julia-build.yaml`
 * For a deployment branch `main`, with a project in a subdir `subdir`.
 * Assumes the existence of a `./.github/workflows/julia-test.yaml`
