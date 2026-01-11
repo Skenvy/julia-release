@@ -52,6 +52,8 @@ jobs:
       run: echo "The new version was ${{ steps.action_test.outputs.new_version }}"
   clean_releases:
     name: Clean Releases and Tags
+    permissions:
+      contents: write
     needs: [test]
     if: ${{ always() }}
     strategy:
@@ -71,6 +73,8 @@ jobs:
       run: git push --delete origin julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
   clean_test_branches:
     name: Clean Branches
+    permissions:
+      contents: write
     needs: [test]
     if: ${{ always() }}
     strategy:
