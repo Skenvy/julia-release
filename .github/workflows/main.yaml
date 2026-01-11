@@ -11,7 +11,7 @@ jobs:
   test:
     name: Test the action on different folder depths
     permissions:
-      contents: read
+      contents: write
     strategy:
       fail-fast: false
       matrix:
