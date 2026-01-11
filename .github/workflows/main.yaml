@@ -6,12 +6,12 @@ on:
 defaults:
   run:
     shell: bash
+permissions: {}
 jobs:
-  context:
-    name: GitHub 🐱‍👤 Context 📑
-    uses: ./.github/workflows/github-context.yaml
   test:
     name: Test the action on different folder depths
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
