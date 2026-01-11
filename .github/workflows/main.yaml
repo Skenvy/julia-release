@@ -6,12 +6,12 @@ on:
 defaults:
   run:
     shell: bash
+permissions: {}
 jobs:
-  context:
-    name: GitHub 🐱‍👤 Context 📑
-    uses: ./.github/workflows/github-context.yaml
   test:
     name: Test the action on different folder depths
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +23,7 @@ jobs:
     runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
     steps:
     - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       with:
         fetch-depth: 0
     - name: TEST - Frob the HEAD commit - Checkout test target
@@ -52,6 +52,8 @@ jobs:
       run: echo "The new version was ${{ steps.action_test.outputs.new_version }}"
   clean_releases:
     name: Clean Releases and Tags
+    permissions:
+      contents: write
     needs: [test]
     if: ${{ always() }}
     strategy:
@@ -62,7 +64,7 @@ jobs:
     steps:
     # Needs to checkout to have the context to call the gh release
     - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
     - name: Remove the release julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,6 +73,8 @@ jobs:
       run: git push --delete origin julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
   clean_test_branches:
     name: Clean Branches
+    permissions:
+      contents: write
     needs: [test]
     if: ${{ always() }}
     strategy:
@@ -81,6 +85,6 @@ jobs:
     steps:
     # Needs to checkout to have the context to call git
     - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
     - name: Remove the branch 'TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}'
       run: git push origin --delete TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}
