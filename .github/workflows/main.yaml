@@ -23,7 +23,7 @@ jobs:
     runs-on: 'ubuntu-latest' # docker jobs not supported on windows or mac
     steps:
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         fetch-depth: 0
     - name: TEST - Frob the HEAD commit - Checkout test target
@@ -64,7 +64,7 @@ jobs:
     steps:
     # Needs to checkout to have the context to call the gh release
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
     - name: Remove the release julia-v1.2.3-${{ matrix.subdir }}-r${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -85,6 +85,6 @@ jobs:
     steps:
     # Needs to checkout to have the context to call git
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
     - name: Remove the branch 'TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}'
       run: git push origin --delete TEST_TARGET_BRANCH_${{ matrix.subdir }}_R${{ github.run_number }}
